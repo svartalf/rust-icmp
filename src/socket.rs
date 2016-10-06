@@ -10,6 +10,13 @@ use compat::{IntoInner, FromInner, cvt};
 const IPPROTO_ICMP: c::c_int = 1;
 
 
+/// Ab Internel Control Message Protocol socket.
+///
+/// This is an implementation of a bound ICMP socket. This supports both IPv4 and
+/// IPv6 addresses, and there is no corresponding notion of a server because ICMP
+/// is a datagram protocol.
+///
+/// TODO: Example
 pub struct IcmpSocket {
     fd: c::c_int,
     peer: c::sockaddr,
@@ -32,6 +39,7 @@ impl IcmpSocket {
         })
     }
 
+    /// Receives data from the socket. On success, returns the number of bytes read.
     pub fn recv(&self, buf: &mut [u8]) -> Result<usize> {
         let ret = unsafe {
             cvt(c::recv(
@@ -49,6 +57,8 @@ impl IcmpSocket {
         }
     }
 
+    /// Receives data from the socket. On success, returns the number of bytes
+    /// read and the address from whence the data came.
     pub fn recv_from(&self, buf: &mut [u8]) -> Result<(usize, IpAddr)> {
         let mut peer: c::sockaddr = unsafe { mem::uninitialized() };
         let ret = unsafe {
@@ -86,15 +96,25 @@ impl IcmpSocket {
         Ok(ret as usize)
     }
 
+    /// Sets the value for the `IP_TTL` option on this socket.
+    ///
+    /// This value sets the time-to-live field that is used in every packet sent
+    /// from this socket.
     pub fn set_ttl(&self, ttl: u32) -> Result<()> {
         let payload = &ttl as *const u32 as *const c::c_void;
         unsafe {
-            cvt(c::setsockopt(self.fd, c::IPPROTO_IP, c::IP_TTL, payload, mem::size_of::<u32>() as c::socklen_t))?
+            cvt(c::setsockopt(self.fd, c::IPPROTO_IP, c::IP_TTL,
+                              payload, mem::size_of::<u32>() as c::socklen_t))?
         };
 
         Ok(())
     }
 
+    /// Gets the value of the `IP_TTL` option for this socket.
+    ///
+    /// For more information about this option, see [`set_ttl`][link].
+    ///
+    /// [link]: #method.set_ttl
     pub fn ttl(&self) -> Result<u32> {
         unsafe {
             let mut slot: u32 = mem::zeroed();

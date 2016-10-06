@@ -5,7 +5,7 @@ environment:
   matrix:
     - RUST_INSTALL_TRIPLE: i686-pc-windows-msvc
       VCVARS: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\vcvars32.bat"
-      RUST_VERSION: stable
+      RUST_VERSION: 1.12.0
     - RUST_INSTALL_TRIPLE: i686-pc-windows-msvc
       VCVARS: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin\\vcvars32.bat"
       RUST_VERSION: beta
