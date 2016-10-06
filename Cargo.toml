@@ -5,6 +5,7 @@ version = "0.1.0"
 authors = ["svartalf <self@svartalf.info>"]
 repository = "https://github.com/svartalf/rust-icmp"
 keywords = ["icmp", "socket"]
+license = "MIT"
 
 [dependencies]
 libc = "0.2.16"
