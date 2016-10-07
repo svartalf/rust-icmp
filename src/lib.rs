@@ -5,4 +5,7 @@ extern crate libc;
 mod compat;
 mod socket;
 
-use socket::IcmpSocket;
+pub use socket::IcmpSocket;
+
+#[cfg(test)]
+mod tests;
