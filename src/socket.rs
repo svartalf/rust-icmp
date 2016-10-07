@@ -9,6 +9,11 @@ use compat::{IntoInner, FromInner, cvt};
 
 const IPPROTO_ICMP: c::c_int = 1;
 
+#[cfg(target_os = "linux")]
+use libc::SOCK_CLOEXEC;
+#[cfg(not(target_os = "linux"))]
+const SOCK_CLOEXEC: c::c_int = 0;
+
 
 /// Ab Internel Control Message Protocol socket.
 ///
@@ -30,7 +35,7 @@ impl IcmpSocket {
         };
 
         let fd = unsafe {
-            cvt(c::socket(family, c::SOCK_RAW, IPPROTO_ICMP))?
+            cvt(c::socket(family, c::SOCK_RAW | SOCK_CLOEXEC, IPPROTO_ICMP))?
         };
 
         Ok(IcmpSocket {
