@@ -1,4 +1,5 @@
 language: rust
+sudo: required
 rust:
   - stable
   - beta
@@ -6,3 +7,7 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+script:
+  - cargo build --verbose
+  - sudo cargo test --verbose
+
