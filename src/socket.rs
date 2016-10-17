@@ -86,6 +86,10 @@ impl IcmpSocket {
         }
     }
 
+    /// Sends data on the socket to the remote address to which it is connected.
+    ///
+    /// The `connect` method will connect this socket to a remote address. This
+    /// method will fail if the socket is not connected.
     pub fn send(&mut self, buf: &[u8]) -> Result<usize> {
         let ret = unsafe {
             cvt(c::sendto(
