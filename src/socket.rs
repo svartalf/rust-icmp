@@ -5,7 +5,7 @@ use std::mem;
 
 use libc as c;
 
-use compat::{IntoInner, FromInner, cvt};
+use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
 
 const IPPROTO_ICMP: c::c_int = 1;
 
@@ -15,7 +15,7 @@ use libc::SOCK_CLOEXEC;
 const SOCK_CLOEXEC: c::c_int = 0;
 
 
-/// Ab Internel Control Message Protocol socket.
+/// An Internet Control Message Protocol socket.
 ///
 /// This is an implementation of a bound ICMP socket. This supports both IPv4 and
 /// IPv6 addresses, and there is no corresponding notion of a server because ICMP
@@ -28,6 +28,7 @@ pub struct IcmpSocket {
 }
 
 impl IcmpSocket {
+
     pub fn connect(addr: IpAddr) -> Result<IcmpSocket> {
         let family = match addr {
             IpAddr::V4(..) => c::AF_INET,
@@ -106,13 +107,7 @@ impl IcmpSocket {
     /// This value sets the time-to-live field that is used in every packet sent
     /// from this socket.
     pub fn set_ttl(&self, ttl: u32) -> Result<()> {
-        let payload = &ttl as *const u32 as *const c::c_void;
-        unsafe {
-            cvt(c::setsockopt(self.fd, c::IPPROTO_IP, c::IP_TTL,
-                              payload, mem::size_of::<u32>() as c::socklen_t))?
-        };
-
-        Ok(())
+        setsockopt(self, c::IPPROTO_IP, c::IP_TTL, ttl as c::c_int)
     }
 
     /// Gets the value of the `IP_TTL` option for this socket.
@@ -121,15 +116,25 @@ impl IcmpSocket {
     ///
     /// [link]: #method.set_ttl
     pub fn ttl(&self) -> Result<u32> {
-        unsafe {
-            let mut slot: u32 = mem::zeroed();
-            let mut len = mem::size_of::<u32>() as c::socklen_t;
-            cvt(c::getsockopt(self.fd, c::IPPROTO_IP, c::IP_TTL,
-                &mut slot as *mut _ as *mut _, &mut len))?;
+        getsockopt(self, c::IPPROTO_IP, c::IP_TTL)
+    }
 
-            Ok(slot)
-        }
+    /// Sets the value of the SO_BROADCAST option for this socket.
+    ///
+    /// When enabled, this socket is allowed to send packets to a broadcast address.
+    pub fn set_broadcast(&self, broadcast: bool) -> Result<()> {
+        setsockopt(&self, c::SOL_SOCKET, c::SO_BROADCAST, broadcast as c::c_int)
+    }
 
+    /// Gets the value of the `SO_BROADCAST` option for this socket.
+    ///
+    /// For more information about this option, see
+    /// [`set_broadcast`][link].
+    ///
+    /// [link]: #method.set_broadcast
+    pub fn broadcast(&self) -> Result<bool> {
+        let raw: c::c_int = getsockopt(&self, c::SOL_SOCKET, c::SO_BROADCAST)?;
+        Ok(raw != 0)
     }
 
 }
@@ -139,5 +144,11 @@ impl Drop for IcmpSocket {
         let _ = unsafe {
             c::close(self.fd)
         };
+    }
+}
+
+impl AsInner<c::c_int> for IcmpSocket {
+    fn as_inner(&self) -> &c::c_int {
+        &self.fd
     }
 }

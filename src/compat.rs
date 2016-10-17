@@ -8,6 +8,8 @@ use std::io;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::convert::From;
 
+use socket::IcmpSocket;
+
 #[doc(hidden)]
 pub trait IsMinusOne {
     fn is_minus_one(&self) -> bool;
@@ -29,6 +31,11 @@ pub fn cvt<T: IsMinusOne>(t: T) -> io::Result<T> {
     } else {
         Ok(t)
     }
+}
+
+#[doc(hidden)]
+pub trait AsInner<Inner: ?Sized> {
+    fn as_inner(&self) -> &Inner;
 }
 
 #[doc(hidden)]
@@ -93,5 +100,26 @@ impl IntoInner<c::sockaddr> for IpAddr {
                 }
             }
         }
+    }
+}
+
+pub fn setsockopt<T>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int, payload: T) -> io::Result<()> {
+    unsafe {
+        let payload = &payload as *const T as *const c::c_void;
+        cvt(c::setsockopt(*sock.as_inner(), opt, val, payload,
+                          mem::size_of::<T>() as c::socklen_t))?;
+        Ok(())
+    }
+}
+
+pub fn getsockopt<T: Copy>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int) -> io::Result<T> {
+    unsafe {
+        let mut slot: T = mem::zeroed();
+        let mut len = mem::size_of::<T>() as c::socklen_t;
+        cvt(c::getsockopt(*sock.as_inner(), opt, val,
+                          &mut slot as *mut _ as *mut _,
+                          &mut len))?;
+        assert_eq!(len as usize, mem::size_of::<T>());
+        Ok(slot)
     }
 }

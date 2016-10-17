@@ -25,3 +25,21 @@ fn ttl() {
 
     assert_eq!(ttl, t!(socket.ttl()));
 }
+
+#[test]
+fn broadcast_on() {
+    let socket = t!(IcmpSocket::connect(ipv4()));
+    t!(socket.set_broadcast(true));
+
+    assert_eq!(true, t!(socket.broadcast()));
+}
+
+#[test]
+fn broadcast_off() {
+    let socket = t!(IcmpSocket::connect(ipv4()));
+    // Enabling broadcast by default to ensure value will change
+    t!(socket.set_broadcast(true));
+
+    t!(socket.set_broadcast(false));
+    assert_eq!(false, t!(socket.broadcast()));
+}
