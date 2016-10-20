@@ -15,12 +15,26 @@ fn ipv4() -> IpAddr {
     IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))
 }
 
+fn ipv6() -> IpAddr {
+    IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0))
+}
+
 
 #[test]
-fn ttl() {
+fn ttl_v4() {
     let ttl = 100;
 
     let socket = t!(IcmpSocket::connect(ipv4()));
+    t!(socket.set_ttl(ttl));
+
+    assert_eq!(ttl, t!(socket.ttl()));
+}
+
+#[test]
+fn ttl_v6() {
+    let ttl = 100;
+
+    let socket = t!(IcmpSocket::connect(ipv6()));
     t!(socket.set_ttl(ttl));
 
     assert_eq!(ttl, t!(socket.ttl()));

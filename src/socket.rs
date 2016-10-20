@@ -7,7 +7,9 @@ use libc as c;
 
 use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
 
+// Following constants are not defined in libc (as for 0.2.17 version)
 const IPPROTO_ICMP: c::c_int = 1;
+const IPV6_UNICAST_HOPS: c::c_int = 16;
 
 #[cfg(target_os = "linux")]
 use libc::SOCK_CLOEXEC;
@@ -24,6 +26,7 @@ const SOCK_CLOEXEC: c::c_int = 0;
 /// TODO: Example
 pub struct IcmpSocket {
     fd: c::c_int,
+    family: c::c_int,
     peer: c::sockaddr,
 }
 
@@ -41,6 +44,7 @@ impl IcmpSocket {
 
         Ok(IcmpSocket {
             fd: fd,
+            family: family,
             peer: addr.into_inner(),
         })
     }
@@ -111,7 +115,11 @@ impl IcmpSocket {
     /// This value sets the time-to-live field that is used in every packet sent
     /// from this socket.
     pub fn set_ttl(&self, ttl: u32) -> Result<()> {
-        setsockopt(self, c::IPPROTO_IP, c::IP_TTL, ttl as c::c_int)
+        match self.family {
+            c::AF_INET => setsockopt(self, c::IPPROTO_IP, c::IP_TTL, ttl as c::c_int),
+            c::AF_INET6 => setsockopt(self, c::IPPROTO_IPV6, IPV6_UNICAST_HOPS, ttl as c::c_int),
+            _ => panic!("Unknown address family"),
+        }
     }
 
     /// Gets the value of the `IP_TTL` option for this socket.
@@ -120,7 +128,11 @@ impl IcmpSocket {
     ///
     /// [link]: #method.set_ttl
     pub fn ttl(&self) -> Result<u32> {
-        getsockopt(self, c::IPPROTO_IP, c::IP_TTL)
+        match self.family {
+            c::AF_INET => getsockopt(self, c::IPPROTO_IP, c::IP_TTL),
+            c::AF_INET6 => getsockopt(self, c::IPPROTO_IPV6, IPV6_UNICAST_HOPS),
+            _ => panic!("Unknown address family"),
+        }
     }
 
     /// Sets the value of the SO_BROADCAST option for this socket.

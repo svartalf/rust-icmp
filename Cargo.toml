@@ -8,4 +8,4 @@ keywords = ["icmp", "socket"]
 license = "MIT"
 
 [dependencies]
-libc = "0.2.16"
+libc = "0.2.17"
