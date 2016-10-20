@@ -7,6 +7,7 @@ use std::mem;
 use std::io;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::convert::From;
+use std::time::Duration;
 
 use socket::IcmpSocket;
 
@@ -121,5 +122,50 @@ pub fn getsockopt<T: Copy>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int) -> i
                           &mut len))?;
         assert_eq!(len as usize, mem::size_of::<T>());
         Ok(slot)
+    }
+}
+
+/// Based on the rust' `std/sys/unix/net.rs`
+pub fn set_timeout(sock: &IcmpSocket, dur: Option<Duration>, kind: c::c_int) -> io::Result<()> {
+    let timeout = match dur {
+        Some(dur) => {
+            if dur.as_secs() == 0 && dur.subsec_nanos() == 0 {
+                return Err(io::Error::new(io::ErrorKind::InvalidInput,
+                                          "cannot set a 0 duration timeout"));
+            }
+
+            let secs = if dur.as_secs() > c::time_t::max_value() as u64 {
+                c::time_t::max_value()
+            } else {
+                dur.as_secs() as c::time_t
+            };
+            let mut timeout = c::timeval {
+                tv_sec: secs,
+                tv_usec: (dur.subsec_nanos() / 1000) as c::suseconds_t,
+            };
+            if timeout.tv_sec == 0 && timeout.tv_usec == 0 {
+                timeout.tv_usec = 1;
+            }
+            timeout
+        }
+        None => {
+            c::timeval {
+                tv_sec: 0,
+                tv_usec: 0,
+            }
+        }
+    };
+    setsockopt(sock, c::SOL_SOCKET, kind, timeout)
+}
+
+/// Based on the rust' `std/sys/unix/net.rs`
+pub fn timeout(sock: &IcmpSocket, kind: c::c_int) -> io::Result<Option<Duration>> {
+    let raw: c::timeval = getsockopt(sock, c::SOL_SOCKET, kind)?;
+    if raw.tv_sec == 0 && raw.tv_usec == 0 {
+        Ok(None)
+    } else {
+        let sec = raw.tv_sec as u64;
+        let nsec = (raw.tv_usec as u32) * 1000;
+        Ok(Some(Duration::new(sec, nsec)))
     }
 }

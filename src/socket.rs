@@ -2,10 +2,11 @@
 use std::net::IpAddr;
 use std::io::{Result, ErrorKind};
 use std::mem;
+use std::time::Duration;
 
 use libc as c;
 
-use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
+use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt, set_timeout, timeout};
 
 // Following constants are not defined in libc (as for 0.2.17 version)
 const IPPROTO_ICMP: c::c_int = 1;
@@ -108,6 +109,50 @@ impl IcmpSocket {
         };
 
         Ok(ret as usize)
+    }
+
+    /// Sets the read timeout to the timeout specified.
+    ///
+    /// If the value specified is `None`, then `read` calls will block
+    /// indefinitely. It is an error to pass the zero `Duration` to this
+    /// method.
+    ///
+    /// # Note
+    ///
+    /// Platforms may return a different error code whenever a read times out as
+    /// a result of setting this option. For example Unix typically returns an
+    /// error of the kind `WouldBlock`, but Windows may return `TimedOut`.
+    pub fn set_read_timeout(&self, dur: Option<Duration>) -> Result<()> {
+        set_timeout(self, dur, c::SO_RCVTIMEO)
+    }
+
+    /// Sets the write timeout to the timeout specified.
+    ///
+    /// If the value specified is `None`, then `write` calls will block
+    /// indefinitely. It is an error to pass the zero `Duration` to this
+    /// method.
+    ///
+    /// # Note
+    ///
+    /// Platforms may return a different error code whenever a write times out
+    /// as a result of setting this option. For example Unix typically returns
+    /// an error of the kind `WouldBlock`, but Windows may return `TimedOut`.
+    pub fn set_write_timeout(&self, dur: Option<Duration>) -> Result<()> {
+        set_timeout(self, dur, c::SO_SNDTIMEO)
+    }
+
+    /// Returns the read timeout of this socket.
+    ///
+    /// If the timeout is `None`, then `read` calls will block indefinitely.
+    pub fn read_timeout(&self) -> Result<Option<Duration>> {
+        timeout(self, c::SO_RCVTIMEO)
+    }
+
+    /// Returns the write timeout of this socket.
+    ///
+    /// If the timeout is `None`, then `write` calls will block indefinitely.
+    pub fn write_timeout(&self) -> Result<Option<Duration>> {
+        timeout(self, c::SO_SNDTIMEO)
     }
 
     /// Sets the value for the `IP_TTL` option on this socket.

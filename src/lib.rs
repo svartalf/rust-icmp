@@ -1,5 +1,3 @@
-#![feature(question_mark)]
-
 extern crate libc;
 
 mod compat;

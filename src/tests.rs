@@ -1,4 +1,5 @@
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::time::Duration;
 
 use IcmpSocket;
 
@@ -16,7 +17,7 @@ fn ipv4() -> IpAddr {
 }
 
 fn ipv6() -> IpAddr {
-    IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0))
+    IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1))
 }
 
 
@@ -38,6 +39,30 @@ fn ttl_v6() {
     t!(socket.set_ttl(ttl));
 
     assert_eq!(ttl, t!(socket.ttl()));
+}
+
+#[test]
+fn read_timeout() {
+    let timeout = Duration::new(2, 0);
+    let socket = t!(IcmpSocket::connect(ipv4()));
+
+    t!(socket.set_read_timeout(Some(timeout)));
+    assert_eq!(Some(timeout), t!(socket.read_timeout()));
+
+    t!(socket.set_read_timeout(None));
+    assert_eq!(None, t!(socket.read_timeout()));
+}
+
+#[test]
+fn write_timeout() {
+    let timeout = Duration::new(2, 0);
+    let socket = t!(IcmpSocket::connect(ipv4()));
+
+    t!(socket.set_write_timeout(Some(timeout)));
+    assert_eq!(Some(timeout), t!(socket.write_timeout()));
+
+    t!(socket.set_write_timeout(None));
+    assert_eq!(None, t!(socket.write_timeout()));
 }
 
 #[test]
