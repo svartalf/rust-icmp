@@ -1,4 +1,7 @@
 language: rust
+os:
+  - linux
+  - osx
 sudo: required
 rust:
   - stable
@@ -7,7 +10,8 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
+env:
+  - RUSTC=/home/travis/rust/bin/rustc RUSTDOC=/home/travis/rust/bin/rustdoc
 script:
   - cargo build --verbose
-  - sudo -E cargo test --verbose
-
+  - sudo -E /home/travis/rust/bin/cargo test --verbose
