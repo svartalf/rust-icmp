@@ -42,6 +42,27 @@ fn ttl_v6() {
 }
 
 #[test]
+fn qos_v4() {
+    let tos: u8 = 184;
+
+    let socket = t!(IcmpSocket::connect(ipv4()));
+    t!(socket.set_qos(tos));
+
+    assert_eq!(tos, t!(socket.tos()));
+}
+
+#[test]
+fn qos_v6() {
+    let dscp = 46;
+
+    let socket = t!(IcmpSocket::connect(ipv6()));
+    t!(socket.set_qos(46));
+
+    assert_eq!(dscp, t!(socket.qos()));
+}
+
+
+#[test]
 fn read_timeout() {
     let timeout = Duration::new(2, 0);
     let socket = t!(IcmpSocket::connect(ipv4()));

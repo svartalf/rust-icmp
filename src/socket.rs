@@ -10,7 +10,11 @@ use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt, set_tim
 
 // Following constants are not defined in libc (as for 0.2.17 version)
 const IPPROTO_ICMP: c::c_int = 1;
+// Ipv4
+const IP_TOS: c::c_int = 3;
+// Ipv6
 const IPV6_UNICAST_HOPS: c::c_int = 16;
+const IPV6_TCLASS: c::c_int = 67;
 
 #[cfg(target_os = "linux")]
 use libc::SOCK_CLOEXEC;
@@ -196,6 +200,32 @@ impl IcmpSocket {
     pub fn broadcast(&self) -> Result<bool> {
         let raw: c::c_int = getsockopt(&self, c::SOL_SOCKET, c::SO_BROADCAST)?;
         Ok(raw != 0)
+    }
+
+    /// Sets the QoS value of the `IP_TOS`/`IPV6_TCLASS` option for this socket.
+    ///
+    /// This value sets the TOS/DSCP field that is used in every packet sent
+    /// from this socket.
+    pub fn set_qos(&self, qos: u8) -> Result<()> {
+        match self.family {
+            c::AF_INET => setsockopt(&self, c::IPPROTO_IP, IP_TOS, qos as c::c_int),
+            c::AF_INET6 => setsockopt(&self, c::IPPROTO_IPV6, IPV6_TCLASS, qos as c::c_int),
+            _ => panic!("Unknown address family"),
+        }
+    }
+
+    /// Gets the value of the `IP_TOS`/`IPV6_TCLASS` option for this socket.
+    ///
+    /// For more information about this option, see
+    /// [`set_qos`][link].
+    ///
+    /// [link]: #method.set_qos
+    pub fn qos(&self) -> Result<u8> {
+        match self.family {
+            c::AF_INET => getsockopt(&self, c::IPPROTO_IP, IP_TOS),
+            c::AF_INET6 => getsockopt(&self, c::IPPROTO_IPV6, IPV6_TCLASS),
+            _ => panic!("Unknown address family"),
+        }
     }
 
 }
