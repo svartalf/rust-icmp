@@ -43,12 +43,12 @@ fn ttl_v6() {
 
 #[test]
 fn qos_v4() {
-    let tos: u8 = 184;
+    let tos: u8 = 0x10;  // IPTOS_LOWDELAY
 
     let socket = t!(IcmpSocket::connect(ipv4()));
     t!(socket.set_qos(tos));
 
-    assert_eq!(tos, t!(socket.tos()));
+    assert_eq!(tos, t!(socket.qos()));
 }
 
 #[test]
