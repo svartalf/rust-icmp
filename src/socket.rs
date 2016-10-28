@@ -11,7 +11,7 @@ use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt, set_tim
 // Following constants are not defined in libc (as for 0.2.17 version)
 const IPPROTO_ICMP: c::c_int = 1;
 // Ipv4
-const IP_TOS: c::c_int = 3;
+const IP_TOS: c::c_int = 1;
 // Ipv6
 const IPV6_UNICAST_HOPS: c::c_int = 16;
 const IPV6_TCLASS: c::c_int = 67;
