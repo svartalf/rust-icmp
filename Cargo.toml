@@ -7,8 +7,9 @@ repository = "https://github.com/svartalf/rust-icmp"
 keywords = ["icmp", "socket"]
 license = "MIT"
 
+[features]
+default = []
+
 [dependencies]
 libc = "0.2.17"
-
-[dev-dependencies]
-clippy = "0.0.95"
+clippy = { version = "0.0.95", optional = true }

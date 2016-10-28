@@ -167,7 +167,7 @@ impl IcmpSocket {
         match self.family {
             c::AF_INET => setsockopt(self, c::IPPROTO_IP, c::IP_TTL, ttl as c::c_int),
             c::AF_INET6 => setsockopt(self, c::IPPROTO_IPV6, IPV6_UNICAST_HOPS, ttl as c::c_int),
-            _ => panic!("Unknown address family"),
+            _ => unreachable!(),
         }
     }
 
@@ -180,7 +180,7 @@ impl IcmpSocket {
         match self.family {
             c::AF_INET => getsockopt(self, c::IPPROTO_IP, c::IP_TTL),
             c::AF_INET6 => getsockopt(self, c::IPPROTO_IPV6, IPV6_UNICAST_HOPS),
-            _ => panic!("Unknown address family"),
+            _ => unreachable!(),
         }
     }
 
@@ -210,7 +210,7 @@ impl IcmpSocket {
         match self.family {
             c::AF_INET => setsockopt(&self, c::IPPROTO_IP, IP_TOS, qos as c::c_int),
             c::AF_INET6 => setsockopt(&self, c::IPPROTO_IPV6, IPV6_TCLASS, qos as c::c_int),
-            _ => panic!("Unknown address family"),
+            _ => unreachable!(),
         }
     }
 
@@ -224,7 +224,7 @@ impl IcmpSocket {
         match self.family {
             c::AF_INET => getsockopt(&self, c::IPPROTO_IP, IP_TOS),
             c::AF_INET6 => getsockopt(&self, c::IPPROTO_IPV6, IPV6_TCLASS),
-            _ => panic!("Unknown address family"),
+            _ => unreachable!(),
         }
     }
 

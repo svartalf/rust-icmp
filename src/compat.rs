@@ -67,7 +67,7 @@ impl FromInner<c::sockaddr> for IpAddr {
                 };
                 IpAddr::V6(Ipv6Addr::from(addr.sin6_addr.s6_addr))
             },
-            _ => panic!("Totally unknown AF family. I'm out.")
+            _ => unreachable!(),
         }
     }
 
@@ -92,7 +92,7 @@ impl IntoInner<c::sockaddr> for IpAddr {
             },
             IpAddr::V6(ref a) => {
                 let mut addr: c::sockaddr_in6 = unsafe { mem::zeroed() };
-                addr.sin6_family = c::AF_INET6 as u16;
+                addr.sin6_family = c::AF_INET6 as c::sa_family_t;
                 addr.sin6_addr = unsafe { mem::zeroed() };
                 addr.sin6_addr.s6_addr = a.octets();
 

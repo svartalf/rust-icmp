@@ -9,9 +9,12 @@ rust:
   - nightly
 matrix:
   allow_failures:
-    - rust: nightly
+    - rust: stable
 env:
-  - RUSTC=$HOME/rust/bin/rustc RUSTDOC=$HOME/rust/bin/rustdoc RUST_BACKTRACE=1
+  - CARGO=$HOME/rust/bin/cargo RUSTC=$HOME/rust/bin/rustc RUSTDOC=$HOME/rust/bin/rustdoc RUST_BACKTRACE=1
 script:
-  - cargo build --verbose
-  - sudo -E /home/travis/rust/bin/cargo test --verbose
+  - echo $TRAVIS_RUST_VERSION
+  - ([ $TRAVIS_RUST_VERSION == nightly ] || $CARGO build --verbose)
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || $CARGO build --verbose --features clippy)
+  - ([ $TRAVIS_RUST_VERSION == nightly ] || sudo $CARGO test --verbose)
+  - ([ $TRAVIS_RUST_VERSION != nightly ] || sudo $CARGO test --verbose --features clippy)

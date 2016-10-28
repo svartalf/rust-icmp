@@ -61,9 +61,8 @@ fn qos_v6() {
     assert_eq!(dscp, t!(socket.qos()));
 }
 
-
 #[test]
-fn read_timeout() {
+fn read_timeout_v4() {
     let timeout = Duration::new(2, 0);
     let socket = t!(IcmpSocket::connect(ipv4()));
 
@@ -75,7 +74,19 @@ fn read_timeout() {
 }
 
 #[test]
-fn write_timeout() {
+fn read_timeout_v6() {
+    let timeout = Duration::new(2, 0);
+    let socket = t!(IcmpSocket::connect(ipv6()));
+
+    t!(socket.set_read_timeout(Some(timeout)));
+    assert_eq!(Some(timeout), t!(socket.read_timeout()));
+
+    t!(socket.set_read_timeout(None));
+    assert_eq!(None, t!(socket.read_timeout()));
+}
+
+#[test]
+fn write_timeout_v4() {
     let timeout = Duration::new(2, 0);
     let socket = t!(IcmpSocket::connect(ipv4()));
 
@@ -87,19 +98,41 @@ fn write_timeout() {
 }
 
 #[test]
-fn broadcast_on() {
-    let socket = t!(IcmpSocket::connect(ipv4()));
-    t!(socket.set_broadcast(true));
+fn write_timeout_v6() {
+    let timeout = Duration::new(2, 0);
+    let socket = t!(IcmpSocket::connect(ipv6()));
 
+    t!(socket.set_write_timeout(Some(timeout)));
+    assert_eq!(Some(timeout), t!(socket.write_timeout()));
+
+    t!(socket.set_write_timeout(None));
+    assert_eq!(None, t!(socket.write_timeout()));
+}
+
+#[test]
+fn broadcast_v4() {
+    let socket = t!(IcmpSocket::connect(ipv4()));
+
+    t!(socket.set_broadcast(true));
+    assert_eq!(true, t!(socket.broadcast()));
+
+    t!(socket.set_broadcast(false));
+    assert_eq!(false, t!(socket.broadcast()));
+
+    t!(socket.set_broadcast(true));
     assert_eq!(true, t!(socket.broadcast()));
 }
 
 #[test]
-fn broadcast_off() {
-    let socket = t!(IcmpSocket::connect(ipv4()));
-    // Enabling broadcast by default to ensure value will change
+fn broadcast_v6() {
+    let socket = t!(IcmpSocket::connect(ipv6()));
+
     t!(socket.set_broadcast(true));
+    assert_eq!(true, t!(socket.broadcast()));
 
     t!(socket.set_broadcast(false));
     assert_eq!(false, t!(socket.broadcast()));
+
+    t!(socket.set_broadcast(true));
+    assert_eq!(true, t!(socket.broadcast()));
 }
