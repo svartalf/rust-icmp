@@ -11,7 +11,7 @@ matrix:
   allow_failures:
     - rust: nightly
 env:
-  - RUSTC=/home/travis/rust/bin/rustc RUSTDOC=/home/travis/rust/bin/rustdoc
+  - RUSTC=$HOME/rust/bin/rustc RUSTDOC=$HOME/rust/bin/rustdoc RUST_BACKTRACE=1
 script:
   - cargo build --verbose
   - sudo -E /home/travis/rust/bin/cargo test --verbose
