@@ -9,9 +9,8 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::convert::From;
 use std::time::Duration;
 
-use socket::IcmpSocket;
+use sys::Socket;
 
-#[doc(hidden)]
 pub trait IsMinusOne {
     fn is_minus_one(&self) -> bool;
 }
@@ -104,7 +103,7 @@ impl IntoInner<c::sockaddr> for IpAddr {
     }
 }
 
-pub fn setsockopt<T>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int, payload: T) -> io::Result<()> {
+pub fn setsockopt<T>(sock: &Socket, opt: c::c_int, val: c::c_int, payload: T) -> io::Result<()> {
     unsafe {
         let payload = &payload as *const T as *const c::c_void;
         cvt(c::setsockopt(*sock.as_inner(), opt, val, payload,
@@ -113,7 +112,7 @@ pub fn setsockopt<T>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int, payload: T
     }
 }
 
-pub fn getsockopt<T: Copy>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int) -> io::Result<T> {
+pub fn getsockopt<T: Copy>(sock: &Socket, opt: c::c_int, val: c::c_int) -> io::Result<T> {
     unsafe {
         let mut slot: T = mem::zeroed();
         let mut len = mem::size_of::<T>() as c::socklen_t;
@@ -126,7 +125,7 @@ pub fn getsockopt<T: Copy>(sock: &IcmpSocket, opt: c::c_int, val: c::c_int) -> i
 }
 
 /// Based on the rust' `std/sys/unix/net.rs`
-pub fn set_timeout(sock: &IcmpSocket, dur: Option<Duration>, kind: c::c_int) -> io::Result<()> {
+pub fn set_timeout(sock: &Socket, dur: Option<Duration>, kind: c::c_int) -> io::Result<()> {
     let timeout = match dur {
         Some(dur) => {
             if dur.as_secs() == 0 && dur.subsec_nanos() == 0 {
@@ -159,7 +158,7 @@ pub fn set_timeout(sock: &IcmpSocket, dur: Option<Duration>, kind: c::c_int) -> 
 }
 
 /// Based on the rust' `std/sys/unix/net.rs`
-pub fn timeout(sock: &IcmpSocket, kind: c::c_int) -> io::Result<Option<Duration>> {
+pub fn timeout(sock: &Socket, kind: c::c_int) -> io::Result<Option<Duration>> {
     let raw: c::timeval = getsockopt(sock, c::SOL_SOCKET, kind)?;
     if raw.tv_sec == 0 && raw.tv_usec == 0 {
         Ok(None)
