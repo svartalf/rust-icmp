@@ -14,10 +14,10 @@ const IP_TOS: c::c_int = 1;
 // Ipv6
 
 #[cfg(not(target_os="macos"))]
-const IPV6_UNICAST_HOPS: c::c_int = 4;
+const IPV6_UNICAST_HOPS: c::c_int = 16;
 
 #[cfg(target_os="macos")]
-const IPV6_UNICAST_HOPS: c::c_int = 16;
+const IPV6_UNICAST_HOPS: c::c_int = 4;
 
 const IPV6_TCLASS: c::c_int = 67;
 
