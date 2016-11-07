@@ -12,7 +12,13 @@ const IPPROTO_ICMP: c::c_int = 1;
 // Ipv4
 const IP_TOS: c::c_int = 1;
 // Ipv6
+
+#[cfg(not(target_os="macos"))]
+const IPV6_UNICAST_HOPS: c::c_int = 4;
+
+#[cfg(target_os="macos")]
 const IPV6_UNICAST_HOPS: c::c_int = 16;
+
 const IPV6_TCLASS: c::c_int = 67;
 
 #[cfg(target_os = "linux")]
