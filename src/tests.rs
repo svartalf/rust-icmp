@@ -56,7 +56,7 @@ fn qos_v6() {
     let dscp = 46;
 
     let socket = t!(IcmpSocket::connect(ipv6()));
-    t!(socket.set_qos(46));
+    t!(socket.set_qos(dscp));
 
     assert_eq!(dscp, t!(socket.qos()));
 }
