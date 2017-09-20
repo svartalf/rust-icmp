@@ -1,7 +1,7 @@
 [package]
 name = "icmp"
 description = "ICMP socket"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["svartalf <self@svartalf.info>"]
 repository = "https://github.com/svartalf/rust-icmp"
 keywords = ["icmp", "socket"]
@@ -11,5 +11,5 @@ license = "MIT"
 default = []
 
 [dependencies]
-libc = "0.2.17"
-clippy = { version = "0.0.95", optional = true }
+libc = "0.2"
+clippy = { version = "0.0.162", optional = true }

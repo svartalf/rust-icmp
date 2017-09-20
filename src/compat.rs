@@ -1,5 +1,5 @@
 /// Few copy-pasted things from the private Rust modules to mimic core behaviour
-/// See `std::sys_common` at https://github.com/rust-lang/rust/tree/master/src/libstd/sys/common
+/// See `std::sys_common` at https://github.com/rust-lang/rust/tree/master/src/libstd/sys_common
 
 use libc as c;
 use std::u32;
