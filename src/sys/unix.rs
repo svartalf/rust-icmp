@@ -1,14 +1,14 @@
 
 use std::net::IpAddr;
-use std::io::{Result, ErrorKind};
+use std::io::{Result, ErrorKind, Error};
+use std::os::unix::io::{RawFd, AsRawFd, IntoRawFd, FromRawFd};
 use std::mem;
 
 use libc as c;
 
 use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
 
-// Following constants are not defined in libc (as for 0.2.17 version)
-const IPPROTO_ICMP: c::c_int = 1;
+// Following constants are not defined in libc (as for 0.2.31 version)
 // Ipv4
 const IP_TOS: c::c_int = 1;
 // Ipv6
@@ -22,7 +22,7 @@ const SOCK_CLOEXEC: c::c_int = 0;
 
 
 pub struct Socket {
-    fd: c::c_int,
+    fd: RawFd,
     family: c::c_int,
     peer: c::sockaddr,
 }
@@ -36,7 +36,7 @@ impl Socket {
         };
 
         let fd = unsafe {
-            cvt(c::socket(family, c::SOCK_RAW | SOCK_CLOEXEC, IPPROTO_ICMP))?
+            cvt(c::socket(family, c::SOCK_RAW | SOCK_CLOEXEC, c::IPPROTO_ICMP))?
         };
 
         Ok(Socket {
@@ -154,5 +154,41 @@ impl Drop for Socket {
 impl AsInner<c::c_int> for Socket {
     fn as_inner(&self) -> &c::c_int {
         &self.fd
+    }
+}
+
+impl AsRawFd for Socket {
+    fn as_raw_fd(&self) -> RawFd {
+        self.fd
+    }
+}
+
+impl IntoRawFd for Socket {
+    fn into_raw_fd(self) -> RawFd {
+        self.fd
+    }
+}
+
+impl FromRawFd for Socket {
+    unsafe fn from_raw_fd(fd: RawFd) -> Self {
+        let mut sockaddr = c::sockaddr{
+            sa_family: c::AF_INET as u16,
+            sa_data: [0; 14],
+        };
+        let res = c::getsockname(
+            fd,
+            &mut sockaddr,
+            &mut (mem::size_of_val(&sockaddr) as c::socklen_t)
+        );
+        if res == -1 {
+            panic!(Error::last_os_error());
+        }
+
+        Socket{
+            fd: fd,
+            // TODO: Probably should other that `AF_INET`/`AF_INET6` values
+            family: sockaddr.sa_family as c::c_int,
+            peer: sockaddr,
+        }
     }
 }
