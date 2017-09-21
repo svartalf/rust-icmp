@@ -2,15 +2,25 @@
 
 set -ev
 
-CARGO_PATH=`whereis -b cargo | cut -d ' ' -f 3`
-echo `whereis -b cargo`
-echo "${CARGO_PATH} will be used for sudo-based tests"
+function run {
+    rm -rf ./target/*/icmp-*
+
+    cargo build --verbose $@
+    cargo test --verbose --no-run $@
+
+    TEST_EXECUTABLE=$(find ./target/ -maxdepth 2 -executable -type f -name 'icmp-*')
+    echo "Found tests executable at ${TEST_EXECUTABLE}"
+
+    sudo setcap cap_net_raw+ep ${TEST_EXECUTABLE}
+    echo "CAP_NET_RAW enabled for ${TEST_EXECUTABLE}"
+    eval "${TEST_EXECUTABLE}"
+
+    echo "Test suite finished"
+}
 
 if [ "${TRAVIS_RUST_VERSION}" == "nightly" ]
 then
-    cargo build --verbose --features clippy
-    sudo ${CARGO_PATH} test --verbose --features clippy
+    run --features clippy
 else
-    cargo build --verbose
-    sudo ${CARGO_PATH} cargo test --verbose
+    run
 fi
