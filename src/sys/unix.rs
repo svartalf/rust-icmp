@@ -171,10 +171,7 @@ impl IntoRawFd for Socket {
 
 impl FromRawFd for Socket {
     unsafe fn from_raw_fd(fd: RawFd) -> Self {
-        let mut sockaddr = c::sockaddr{
-            sa_family: c::AF_INET as u16,
-            sa_data: [0; 14],
-        };
+        let mut sockaddr: c::sockaddr = mem::zeroed();
         let res = c::getsockname(
             fd,
             &mut sockaddr,
@@ -186,7 +183,7 @@ impl FromRawFd for Socket {
 
         Socket{
             fd: fd,
-            // TODO: Probably should other that `AF_INET`/`AF_INET6` values
+            // TODO: Probably should check for values other than `AF_INET`/`AF_INET6`
             family: sockaddr.sa_family as c::c_int,
             peer: sockaddr,
         }
