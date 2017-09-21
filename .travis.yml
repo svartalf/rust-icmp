@@ -11,9 +11,5 @@ matrix:
   allow_failures:
     - rust: stable
 env:
-  - RUST_BACKTRACE=1 CARGO_PATH=`whereis -b cargo | cut -d ' ' -f 2`
-script:
-  - ([ $TRAVIS_RUST_VERSION == nightly ] || cargo build --verbose)
-  - ([ $TRAVIS_RUST_VERSION != nightly ] || cargo build --verbose --features clippy)
-  - ([ $TRAVIS_RUST_VERSION == nightly ] || sudo $CARGO_PATH test --verbose)
-  - ([ $TRAVIS_RUST_VERSION != nightly ] || sudo $CARGO_PATH test --verbose --features clippy)
+  - RUST_BACKTRACE=1
+script: ./scripts/travis-build.sh
