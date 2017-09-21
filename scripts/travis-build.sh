@@ -3,7 +3,7 @@
 set -ev
 
 CARGO_PATH=`whereis -b cargo | cut -d ' ' -f 3`
-echo "whereis cargo result: `whereis -b cargo`"
+echo `whereis -b cargo`
 echo "${CARGO_PATH} will be used for sudo-based tests"
 
 if [ "${TRAVIS_RUST_VERSION}" == "nightly" ]
