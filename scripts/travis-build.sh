@@ -8,7 +8,13 @@ function run {
     cargo build --verbose $@
     cargo test --verbose --no-run $@
 
-    TEST_EXECUTABLE=$(find ./target/ -maxdepth 2 -executable -type f -name 'icmp-*')
+    if [ "${TRAVIS_OS_NAME}" == "osx" ]
+    then
+        FIND_FLAGS="-perm +0111"
+    else
+        FIND_FLAGS="-executable"  # Fallback to GNU find syntax
+    fi
+    TEST_EXECUTABLE=$(find ./target/ -maxdepth 2 ${FIND_FLAGS} -type f -name 'icmp-*')
     echo "Found tests executable at ${TEST_EXECUTABLE}"
 
     sudo setcap cap_net_raw+ep ${TEST_EXECUTABLE}
