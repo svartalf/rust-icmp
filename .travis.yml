@@ -9,7 +9,7 @@ rust:
   - nightly
 matrix:
   allow_failures:
-    - os: osx
+    - rust: nightly
 env:
   - RUST_BACKTRACE=1
 script: ./scripts/travis-build.sh

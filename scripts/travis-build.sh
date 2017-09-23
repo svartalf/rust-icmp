@@ -17,9 +17,7 @@ function run {
     TEST_EXECUTABLE=$(find ./target/ -maxdepth 2 ${FIND_FLAGS} -type f -name 'icmp-*')
     echo "Found tests executable at ${TEST_EXECUTABLE}"
 
-    sudo setcap cap_net_raw+ep ${TEST_EXECUTABLE}
-    echo "CAP_NET_RAW enabled for ${TEST_EXECUTABLE}"
-    eval "${TEST_EXECUTABLE}"
+    eval "sudo ${TEST_EXECUTABLE}"
 
     echo "Test suite finished"
 }
