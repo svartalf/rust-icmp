@@ -1,11 +1,11 @@
 
-use std::net::IpAddr;
+use std::net::{IpAddr, ToSocketAddrs};
 use std::io::{Result};
 use std::time::Duration;
 
 use libc as c;
 
-use compat::{AsInner, set_timeout, timeout};
+use compat::{AsInner, set_timeout, timeout, each_addr};
 
 use sys::Socket;
 
@@ -16,29 +16,23 @@ use sys::Socket;
 /// is a datagram protocol.
 ///
 /// TODO: Example
-pub struct IcmpSocket {
-    inner: Socket,
-}
+pub struct IcmpSocket(Socket); 
 
 impl IcmpSocket {
 
-    pub fn connect(addr: IpAddr) -> Result<IcmpSocket> {
-        let inner = Socket::connect(addr)?;
-
-        Ok(IcmpSocket {
-            inner: inner,
-        })
+    pub fn connect<A: ToSocketAddrs>(addr: A) -> Result<IcmpSocket> {
+        each_addr(addr, Socket::connect).map(IcmpSocket)
     }
 
     /// Receives data from the socket. On success, returns the number of bytes read.
     pub fn recv(&self, buf: &mut [u8]) -> Result<usize> {
-        self.inner.recv(buf)
+        self.0.recv(buf)
     }
 
     /// Receives data from the socket. On success, returns the number of bytes
     /// read and the address from whence the data came.
     pub fn recv_from(&self, buf: &mut [u8]) -> Result<(usize, IpAddr)> {
-        self.inner.recv_from(buf)
+        self.0.recv_from(buf)
     }
 
     /// Sends data on the socket to the remote address to which it is connected.
@@ -46,7 +40,7 @@ impl IcmpSocket {
     /// The `connect` method will connect this socket to a remote address. This
     /// method will fail if the socket is not connected.
     pub fn send(&mut self, buf: &[u8]) -> Result<usize> {
-        self.inner.send(buf)
+        self.0.send(buf)
     }
 
     /// Sets the read timeout to the timeout specified.
@@ -98,7 +92,7 @@ impl IcmpSocket {
     /// This value sets the time-to-live field that is used in every packet sent
     /// from this socket.
     pub fn set_ttl(&self, ttl: u32) -> Result<()> {
-        self.inner.set_ttl(ttl)
+        self.0.set_ttl(ttl)
     }
 
     /// Gets the value of the `IP_TTL` option for this socket.
@@ -107,14 +101,14 @@ impl IcmpSocket {
     ///
     /// [link]: #method.set_ttl
     pub fn ttl(&self) -> Result<u32> {
-        self.inner.ttl()
+        self.0.ttl()
     }
 
     /// Sets the value of the SO_BROADCAST option for this socket.
     ///
     /// When enabled, this socket is allowed to send packets to a broadcast address.
     pub fn set_broadcast(&self, broadcast: bool) -> Result<()> {
-        self.inner.set_broadcast(broadcast)
+        self.0.set_broadcast(broadcast)
     }
 
     /// Gets the value of the `SO_BROADCAST` option for this socket.
@@ -124,7 +118,7 @@ impl IcmpSocket {
     ///
     /// [link]: #method.set_broadcast
     pub fn broadcast(&self) -> Result<bool> {
-        self.inner.broadcast()
+        self.0.broadcast()
     }
 
     /// Sets the QoS value of the `IP_TOS`/`IPV6_TCLASS` option for this socket.
@@ -132,7 +126,7 @@ impl IcmpSocket {
     /// This value sets the TOS/DSCP field that is used in every packet sent
     /// from this socket.
     pub fn set_qos(&self, qos: u8) -> Result<()> {
-        self.inner.set_qos(qos)
+        self.0.set_qos(qos)
     }
 
     /// Gets the value of the `IP_TOS`/`IPV6_TCLASS` option for this socket.
@@ -142,13 +136,13 @@ impl IcmpSocket {
     ///
     /// [link]: #method.set_qos
     pub fn qos(&self) -> Result<u8> {
-        self.inner.qos()
+        self.0.qos()
     }
 
 }
 
 impl AsInner<Socket> for IcmpSocket {
     fn as_inner(&self) -> &Socket {
-        &self.inner
+        &self.0
     }
 }

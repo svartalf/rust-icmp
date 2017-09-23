@@ -1,5 +1,5 @@
 
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::io::{Result, ErrorKind, Error};
 use std::os::unix::io::{RawFd, AsRawFd, IntoRawFd, FromRawFd};
 use std::mem;
@@ -15,6 +15,7 @@ const IP_TOS: c::c_int = 1;
 const IPV6_UNICAST_HOPS: c::c_int = 16;
 const IPV6_TCLASS: c::c_int = 67;
 
+// TODO: Add support for old Linux versions without SOCK_CLOEXEC support
 #[cfg(target_os = "linux")]
 use libc::SOCK_CLOEXEC;
 #[cfg(not(target_os = "linux"))]
@@ -29,10 +30,10 @@ pub struct Socket {
 
 impl Socket {
 
-    pub fn connect(addr: IpAddr) -> Result<Socket> {
-        let family = match addr {
-            IpAddr::V4(..) => c::AF_INET,
-            IpAddr::V6(..) => c::AF_INET6,
+    pub fn connect(addr: &SocketAddr) -> Result<Socket> {
+        let family = match *addr {
+            SocketAddr::V4(..) => c::AF_INET,
+            SocketAddr::V6(..) => c::AF_INET6,
         };
 
         let fd = unsafe {

@@ -5,7 +5,7 @@ use libc as c;
 use std::u32;
 use std::mem;
 use std::io;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::net::{SocketAddr, IpAddr, Ipv4Addr, Ipv6Addr, ToSocketAddrs};
 use std::convert::From;
 use std::time::Duration;
 
@@ -72,28 +72,28 @@ impl FromInner<c::sockaddr> for IpAddr {
 
 }
 
-impl IntoInner<c::sockaddr> for IpAddr {
+impl IntoInner<c::sockaddr> for SocketAddr {
     fn into_inner(self) -> c::sockaddr {
         match self {
-            IpAddr::V4(ref a) => {
-                let ip: u32 = From::from(*a);
-
+            SocketAddr::V4(ref a) => {
                 let mut addr: c::sockaddr_in = unsafe { mem::zeroed() };
                 addr.sin_family = c::AF_INET as c::sa_family_t;
                 addr.sin_port = 0 as c::in_port_t;
                 addr.sin_addr = c::in_addr {
-                    s_addr: ip.to_be() as c::uint32_t
+                    s_addr: (u32::from(*a.ip())) as c::uint32_t,
                 };
 
                 unsafe {
                     *(&addr as *const _ as *const c::sockaddr) as c::sockaddr
                 }
             },
-            IpAddr::V6(ref a) => {
+            SocketAddr::V6(ref a) => {
                 let mut addr: c::sockaddr_in6 = unsafe { mem::zeroed() };
                 addr.sin6_family = c::AF_INET6 as c::sa_family_t;
                 addr.sin6_addr = unsafe { mem::zeroed() };
-                addr.sin6_addr.s6_addr = a.octets();
+                addr.sin6_addr.s6_addr = a.ip().octets();
+                addr.sin6_flowinfo = a.flowinfo();
+                addr.sin6_scope_id = a.scope_id();
 
                 unsafe {
                     *(&addr as *const _ as *const c::sockaddr) as c::sockaddr
@@ -167,4 +167,20 @@ pub fn timeout(sock: &Socket, kind: c::c_int) -> io::Result<Option<Duration>> {
         let nsec = (raw.tv_usec as u32) * 1000;
         Ok(Some(Duration::new(sec, nsec)))
     }
+}
+
+/// Based on the rust' `std/net/mod.rs`
+pub fn each_addr<A: ToSocketAddrs, F, T>(addr: A, mut f: F) -> io::Result<T>
+    where F: FnMut(&SocketAddr) -> io::Result<T> {
+    let mut last_err = None;
+    for addr in addr.to_socket_addrs()? {
+        match f(&addr) {
+            Ok(l) => return Ok(l),
+            Err(e) => last_err = Some(e),
+        }
+    }
+    Err(last_err.unwrap_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput,
+                   "could not resolve to any addresses")
+    }))
 }

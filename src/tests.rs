@@ -1,4 +1,4 @@
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::net;
 use std::time::Duration;
 
 use IcmpSocket;
@@ -12,12 +12,18 @@ macro_rules! t {
     }
 }
 
-fn ipv4() -> IpAddr {
-    IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))
+fn ipv4() -> net::SocketAddr {
+    let ip = net::Ipv4Addr::new(127, 0, 0, 1);
+    net::SocketAddr::V4(
+        net::SocketAddrV4::new(ip, 0)
+    )
 }
 
-fn ipv6() -> IpAddr {
-    IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1))
+fn ipv6() -> net::SocketAddr {
+    let ip = net::Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1);
+    net::SocketAddr::V6(
+        net::SocketAddrV6::new(ip, 0, 0, 0)
+    )
 }
 
 
