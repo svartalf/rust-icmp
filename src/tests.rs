@@ -59,12 +59,12 @@ fn qos_v4() {
 
 #[test]
 fn qos_v6() {
-    let dscp = 46;
+    let value = 1;
 
     let socket = t!(IcmpSocket::connect(ipv6()));
-    t!(socket.set_qos(46));
+    t!(socket.set_qos(1));
 
-    assert_eq!(dscp, t!(socket.qos()));
+    assert_eq!(value, t!(socket.qos()));
 }
 
 #[test]
