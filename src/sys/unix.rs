@@ -10,10 +10,21 @@ use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
 
 // Following constants are not defined in libc (as for 0.2.31 version)
 // Ipv4
+#[cfg(target_os = "linux")]
 const IP_TOS: c::c_int = 1;
+#[cfg(target_os = "macos")]
+const IP_TOS: c::c_int = 3;
+
 // Ipv6
+#[cfg(target_os = "linux")]
 const IPV6_UNICAST_HOPS: c::c_int = 16;
+#[cfg(target_os = "macos")]
+const IPV6_UNICAST_HOPS: c::c_int = 4;
+
+#[cfg(target_os = "linux")]
 const IPV6_TCLASS: c::c_int = 67;
+#[cfg(target_os = "macos")]
+const IPV6_TCLASS: c::c_int = 61;
 
 // TODO: Add support for old Linux versions without SOCK_CLOEXEC support
 #[cfg(target_os = "linux")]
