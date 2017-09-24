@@ -53,14 +53,12 @@ impl FromInner<c::sockaddr> for IpAddr {
     fn from_inner(inner: c::sockaddr) -> IpAddr {
         match inner.sa_family as i32 {
             c::AF_INET => {
-                // TODO: probably `ref` can be used here
                 let addr: c::sockaddr_in = unsafe {
                     *(&inner as *const _ as *const c::sockaddr_in) as c::sockaddr_in
                 };
                 IpAddr::V4(Ipv4Addr::from(u32::from_be(addr.sin_addr.s_addr)))
             },
             c::AF_INET6 => {
-                // TODO: probably `ref` can be used here
                 let addr: c::sockaddr_in6 = unsafe {
                     *(&inner as *const _ as *const c::sockaddr_in6) as c::sockaddr_in6
                 };
