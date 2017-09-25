@@ -25,12 +25,16 @@ impl IcmpSocket {
     }
 
     /// Receives data from the socket. On success, returns the number of bytes read.
+    ///
+    /// Note: This method stores both IP packet headers and ICMP payload in `buf`
     pub fn recv(&self, buf: &mut [u8]) -> Result<usize> {
         self.0.recv(buf)
     }
 
     /// Receives data from the socket. On success, returns the number of bytes
     /// read and the address from whence the data came.
+    ///
+    /// Note: This method stores both IP packet headers and ICMP payload in `buf`
     pub fn recv_from(&self, buf: &mut [u8]) -> Result<(usize, IpAddr)> {
         self.0.recv_from(buf)
     }

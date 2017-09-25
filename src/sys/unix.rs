@@ -6,7 +6,6 @@ use std::mem;
 use libc as c;
 
 use compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
-use ip::icmp_payload;
 
 // Following constants are not defined in libc (as for 0.2.31 version)
 // Ipv4
@@ -69,10 +68,7 @@ impl Socket {
         };
 
         match ret {
-            Ok(size) => {
-                let payload_size = icmp_payload(buf, size)?;
-                Ok(payload_size)
-            },
+            Ok(size) => Ok(size as usize),
             Err(ref err) if err.kind() == ErrorKind::Interrupted => Ok(0),
             Err(err) => Err(err),
         }
@@ -93,12 +89,7 @@ impl Socket {
         };
 
         match ret {
-            Ok(size) => {
-                // Dropping IP headers
-                let payload_size = icmp_payload(buf, size)?;
-
-                Ok((payload_size, IpAddr::from_inner(peer)))
-            },
+            Ok(size) => Ok((size as usize, IpAddr::from_inner(peer))),
             Err(ref err) if err.kind() == ErrorKind::Interrupted => Ok((0, IpAddr::from_inner(peer))),
             Err(err) => Err(err),
         }

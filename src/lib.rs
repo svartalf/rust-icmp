@@ -6,7 +6,6 @@ extern crate libc;
 #[doc(hidden)]
 mod compat;
 mod socket;
-mod ip;
 
 #[cfg(unix)]
 #[path = "sys/unix.rs"] mod sys;
