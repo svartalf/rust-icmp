@@ -36,6 +36,7 @@ pub struct Socket {
     fd: RawFd,
     family: c::c_int,
     peer: c::sockaddr,
+    peer_len: c::socklen_t,
 }
 
 impl Socket {
@@ -50,10 +51,13 @@ impl Socket {
             cvt(c::socket(family, c::SOCK_RAW | SOCK_CLOEXEC, c::IPPROTO_ICMP))?
         };
 
+        let (peer, peer_len) = addr.into_inner();
+
         Ok(Socket {
             fd: fd,
             family: family,
-            peer: addr.into_inner(),
+            peer: peer,
+            peer_len: peer_len,
         })
     }
 
@@ -103,7 +107,7 @@ impl Socket {
                     buf.len() as c::size_t,
                     0,
                     &self.peer,
-                    mem::size_of_val(&self.peer) as c::socklen_t,
+                    self.peer_len,
                 )
             )?
         };
@@ -197,6 +201,8 @@ impl FromRawFd for Socket {
             // TODO: Probably should check for values other than `AF_INET`/`AF_INET6`
             family: sockaddr.sa_family as c::c_int,
             peer: sockaddr,
+            // TODO: Proper peer_length
+            peer_len: 0,
         }
     }
 }

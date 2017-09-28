@@ -70,8 +70,8 @@ impl FromInner<c::sockaddr> for IpAddr {
 
 }
 
-impl IntoInner<c::sockaddr> for SocketAddr {
-    fn into_inner(self) -> c::sockaddr {
+impl IntoInner<(c::sockaddr, c::socklen_t)> for SocketAddr {
+    fn into_inner(self) -> (c::sockaddr, c::socklen_t) {
         match self {
             SocketAddr::V4(ref a) => {
                 let mut addr: c::sockaddr_in = unsafe { mem::zeroed() };
@@ -82,7 +82,10 @@ impl IntoInner<c::sockaddr> for SocketAddr {
                 };
 
                 unsafe {
-                    *(&addr as *const _ as *const c::sockaddr) as c::sockaddr
+                    (
+                        *(&addr as *const _ as *const c::sockaddr) as c::sockaddr,
+                        mem::size_of_val(&addr) as c::socklen_t
+                    )
                 }
             },
             SocketAddr::V6(ref a) => {
@@ -90,11 +93,15 @@ impl IntoInner<c::sockaddr> for SocketAddr {
                 addr.sin6_family = c::AF_INET6 as c::sa_family_t;
                 addr.sin6_addr = unsafe { mem::zeroed() };
                 addr.sin6_addr.s6_addr = a.ip().octets();
-                addr.sin6_flowinfo = a.flowinfo();
-                addr.sin6_scope_id = a.scope_id();
+                addr.sin6_port = a.port() as c::in_port_t;
+                addr.sin6_flowinfo = a.flowinfo() as c::uint32_t;
+                addr.sin6_scope_id = a.scope_id() as c::uint32_t;
 
                 unsafe {
-                    *(&addr as *const _ as *const c::sockaddr) as c::sockaddr
+                    (
+                        *(&addr as *const _ as *const c::sockaddr) as c::sockaddr,
+                        mem::size_of_val(&addr) as c::socklen_t
+                    )
                 }
             }
         }
