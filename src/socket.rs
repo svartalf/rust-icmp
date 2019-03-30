@@ -31,6 +31,13 @@ use sys::Socket;
 ///    assert_eq!(result.unwrap(), 2);
 ///
 /// ```
+///
+/// In case you received an error message, you need to enable the correct capabilites:
+/// ```
+/// cargo build
+/// sudo setcap cap_net_raw+ep ./target/debug/PROJECT_NAME
+/// cargo run
+/// ```
 
 //
 pub struct IcmpSocket {
