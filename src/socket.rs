@@ -15,7 +15,24 @@ use sys::Socket;
 /// IPv6 addresses, and there is no corresponding notion of a server because ICMP
 /// is a datagram protocol.
 ///
-/// TODO: Example
+///
+///
+/// ```
+/// use icmp;
+/// use std::net::{IpAddr, Ipv4Addr};
+///
+///    let ping = icmp::IcmpSocket::connect(localhost_v4);
+///    let mut ping = ping.unwrap();
+///
+///
+///    let payload: &[u8]  =  &[1,2];
+///
+///    let result = ping.send(payload);
+///    assert_eq!(result.unwrap(), 2);
+///
+/// ```
+
+//
 pub struct IcmpSocket {
     inner: Socket,
 }
