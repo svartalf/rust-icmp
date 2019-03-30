@@ -21,14 +21,14 @@ use sys::Socket;
 /// use icmp;
 /// use std::net::{IpAddr, Ipv4Addr};
 ///
-///    let ping = icmp::IcmpSocket::connect(localhost_v4);
-///    let mut ping = ping.unwrap();
+/// let ping = icmp::IcmpSocket::connect(localhost_v4);
+/// let mut ping = ping.unwrap();
 ///
 ///
-///    let payload: &[u8]  =  &[1,2];
+/// let payload: &[u8]  =  &[1,2];
 ///
-///    let result = ping.send(payload);
-///    assert_eq!(result.unwrap(), 2);
+/// let result = ping.send(payload);
+/// assert_eq!(result.unwrap(), 2);
 ///
 /// ```
 ///
