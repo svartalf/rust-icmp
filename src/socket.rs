@@ -3,11 +3,8 @@ use std::net::IpAddr;
 use std::io::{Result};
 use std::time::Duration;
 
-use libc as c;
-
-use compat::{AsInner, set_timeout, timeout};
-
-use sys::Socket;
+use crate::compat::{AsInner, set_timeout, timeout};
+use crate::sys::Socket;
 
 /// An Internet Control Message Protocol socket.
 ///
@@ -22,11 +19,12 @@ pub struct IcmpSocket {
 
 impl IcmpSocket {
 
+    /// Connect socket to `addr`
     pub fn connect(addr: IpAddr) -> Result<IcmpSocket> {
         let inner = Socket::connect(addr)?;
 
         Ok(IcmpSocket {
-            inner: inner,
+            inner,
         })
     }
 
@@ -61,7 +59,7 @@ impl IcmpSocket {
     /// a result of setting this option. For example Unix typically returns an
     /// error of the kind `WouldBlock`, but Windows may return `TimedOut`.
     pub fn set_read_timeout(&self, dur: Option<Duration>) -> Result<()> {
-        set_timeout(self.as_inner(), dur, c::SO_RCVTIMEO)
+        set_timeout(self.as_inner(), dur, libc::SO_RCVTIMEO)
     }
 
     /// Sets the write timeout to the timeout specified.
@@ -76,21 +74,21 @@ impl IcmpSocket {
     /// as a result of setting this option. For example Unix typically returns
     /// an error of the kind `WouldBlock`, but Windows may return `TimedOut`.
     pub fn set_write_timeout(&self, dur: Option<Duration>) -> Result<()> {
-        set_timeout(self.as_inner(), dur, c::SO_SNDTIMEO)
+        set_timeout(self.as_inner(), dur, libc::SO_SNDTIMEO)
     }
 
     /// Returns the read timeout of this socket.
     ///
     /// If the timeout is `None`, then `read` calls will block indefinitely.
     pub fn read_timeout(&self) -> Result<Option<Duration>> {
-        timeout(self.as_inner(), c::SO_RCVTIMEO)
+        timeout(self.as_inner(), libc::SO_RCVTIMEO)
     }
 
     /// Returns the write timeout of this socket.
     ///
     /// If the timeout is `None`, then `write` calls will block indefinitely.
     pub fn write_timeout(&self) -> Result<Option<Duration>> {
-        timeout(self.as_inner(), c::SO_SNDTIMEO)
+        timeout(self.as_inner(), libc::SO_SNDTIMEO)
     }
 
     /// Sets the value for the `IP_TTL` option on this socket.
