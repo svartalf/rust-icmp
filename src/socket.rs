@@ -14,10 +14,11 @@ use crate::sys::Socket;
 ///
 ///
 ///
-/// ```
+/// ```rust
 /// use icmp;
 /// use std::net::{IpAddr, Ipv4Addr};
 ///
+/// let localhost_v4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
 /// let ping = icmp::IcmpSocket::connect(localhost_v4);
 /// let mut ping = ping.unwrap();
 ///
@@ -30,7 +31,7 @@ use crate::sys::Socket;
 /// ```
 ///
 /// In case you received an error message, you need to enable the correct capabilites:
-/// ```
+/// ```bash
 /// cargo build
 /// sudo setcap cap_net_raw+ep ./target/debug/PROJECT_NAME
 /// cargo run
