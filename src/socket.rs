@@ -12,7 +12,32 @@ use crate::sys::Socket;
 /// IPv6 addresses, and there is no corresponding notion of a server because ICMP
 /// is a datagram protocol.
 ///
-/// TODO: Example
+///
+///
+/// ```rust
+/// use icmp;
+/// use std::net::{IpAddr, Ipv4Addr};
+///
+/// let localhost_v4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+/// let ping = icmp::IcmpSocket::connect(localhost_v4);
+/// let mut ping = ping.unwrap();
+///
+///
+/// let payload: &[u8]  =  &[1,2];
+///
+/// let result = ping.send(payload);
+/// assert_eq!(result.unwrap(), 2);
+///
+/// ```
+///
+/// In case you received an error message, you need to enable the correct capabilites:
+/// ```bash
+/// cargo build
+/// sudo setcap cap_net_raw+ep ./target/debug/PROJECT_NAME
+/// cargo run
+/// ```
+
+//
 pub struct IcmpSocket {
     inner: Socket,
 }
