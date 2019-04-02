@@ -1,9 +1,8 @@
-
+use std::io::Result;
 use std::net::IpAddr;
-use std::io::{Result};
 use std::time::Duration;
 
-use crate::compat::{AsInner, set_timeout, timeout};
+use crate::compat::{set_timeout, timeout, AsInner};
 use crate::sys::Socket;
 
 /// An Internet Control Message Protocol socket.
@@ -22,12 +21,10 @@ use crate::sys::Socket;
 /// let ping = icmp::IcmpSocket::connect(localhost_v4);
 /// let mut ping = ping.unwrap();
 ///
-///
-/// let payload: &[u8]  =  &[1,2];
+/// let payload: &[u8] = &[1, 2];
 ///
 /// let result = ping.send(payload);
 /// assert_eq!(result.unwrap(), 2);
-///
 /// ```
 ///
 /// In case you received an error message, you need to enable the correct capabilites:
@@ -43,7 +40,6 @@ pub struct IcmpSocket {
 }
 
 impl IcmpSocket {
-
     /// Connect socket to `addr`
     pub fn connect(addr: IpAddr) -> Result<IcmpSocket> {
         let inner = Socket::connect(addr)?;
@@ -167,7 +163,6 @@ impl IcmpSocket {
     pub fn qos(&self) -> Result<u8> {
         self.inner.qos()
     }
-
 }
 
 impl AsInner<Socket> for IcmpSocket {

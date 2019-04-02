@@ -9,7 +9,7 @@ macro_rules! t {
             Ok(t) => t,
             Err(e) => panic!("received error for `{}`: {}", stringify!($e), e),
         }
-    }
+    };
 }
 
 fn ipv4() -> IpAddr {
@@ -19,7 +19,6 @@ fn ipv4() -> IpAddr {
 fn ipv6() -> IpAddr {
     IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1))
 }
-
 
 #[test]
 fn ttl_v4() {
@@ -43,7 +42,7 @@ fn ttl_v6() {
 
 #[test]
 fn qos_v4() {
-    let tos: u8 = 0x10;  // IPTOS_LOWDELAY
+    let tos: u8 = 0x10; // IPTOS_LOWDELAY
 
     let socket = t!(IcmpSocket::connect(ipv4()));
     t!(socket.set_qos(tos));

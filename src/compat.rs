@@ -1,12 +1,11 @@
-/// Few copy-pasted things from the private Rust modules to mimic core behaviour
-/// See `std::sys_common` at https://github.com/rust-lang/rust/tree/master/src/libstd/sys/common
-
-use std::u32;
-use std::mem;
-use std::io;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+//! Few copy-pasted things from the private Rust modules to mimic core behaviour
+//! See `std::sys_common` at https://github.com/rust-lang/rust/tree/master/src/libstd/sys/common
 use std::convert::From;
+use std::io;
+use std::mem;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::time::Duration;
+use std::u32;
 
 use crate::sys::Socket;
 
@@ -48,27 +47,23 @@ pub trait IntoInner<Inner> {
 }
 
 impl FromInner<libc::sockaddr> for IpAddr {
-
     fn from_inner(inner: libc::sockaddr) -> IpAddr {
         match inner.sa_family as i32 {
             libc::AF_INET => {
                 // TODO: probably `ref` can be used here
-                let addr: libc::sockaddr_in = unsafe {
-                    *(&inner as *const _ as *const libc::sockaddr_in) as libc::sockaddr_in
-                };
+                let addr: libc::sockaddr_in =
+                    unsafe { *(&inner as *const _ as *const libc::sockaddr_in) as libc::sockaddr_in };
                 IpAddr::V4(Ipv4Addr::from(u32::from_be(addr.sin_addr.s_addr)))
-            },
+            }
             libc::AF_INET6 => {
                 // TODO: probably `ref` can be used here
-                let addr: libc::sockaddr_in6 = unsafe {
-                    *(&inner as *const _ as *const libc::sockaddr_in6) as libc::sockaddr_in6
-                };
+                let addr: libc::sockaddr_in6 =
+                    unsafe { *(&inner as *const _ as *const libc::sockaddr_in6) as libc::sockaddr_in6 };
                 IpAddr::V6(Ipv6Addr::from(addr.sin6_addr.s6_addr))
-            },
+            }
             _ => unreachable!(),
         }
     }
-
 }
 
 impl IntoInner<libc::sockaddr> for IpAddr {
@@ -81,22 +76,18 @@ impl IntoInner<libc::sockaddr> for IpAddr {
                 addr.sin_family = libc::AF_INET as libc::sa_family_t;
                 addr.sin_port = 0 as libc::in_port_t;
                 addr.sin_addr = libc::in_addr {
-                    s_addr: ip.to_be() as libc::uint32_t
+                    s_addr: ip.to_be() as libc::uint32_t,
                 };
 
-                unsafe {
-                    *(&addr as *const _ as *const libc::sockaddr) as libc::sockaddr
-                }
-            },
+                unsafe { *(&addr as *const _ as *const libc::sockaddr) as libc::sockaddr }
+            }
             IpAddr::V6(ref a) => {
                 let mut addr: libc::sockaddr_in6 = unsafe { mem::zeroed() };
                 addr.sin6_family = libc::AF_INET6 as libc::sa_family_t;
                 addr.sin6_addr = unsafe { mem::zeroed() };
                 addr.sin6_addr.s6_addr = a.octets();
 
-                unsafe {
-                    *(&addr as *const _ as *const libc::sockaddr) as libc::sockaddr
-                }
+                unsafe { *(&addr as *const _ as *const libc::sockaddr) as libc::sockaddr }
             }
         }
     }
@@ -105,8 +96,13 @@ impl IntoInner<libc::sockaddr> for IpAddr {
 pub fn setsockopt<T>(sock: &Socket, opt: libc::c_int, val: libc::c_int, payload: T) -> io::Result<()> {
     unsafe {
         let payload = &payload as *const T as *const libc::c_void;
-        cvt(libc::setsockopt(*sock.as_inner(), opt, val, payload,
-                          mem::size_of::<T>() as libc::socklen_t))?;
+        cvt(libc::setsockopt(
+            *sock.as_inner(),
+            opt,
+            val,
+            payload,
+            mem::size_of::<T>() as libc::socklen_t,
+        ))?;
         Ok(())
     }
 }
@@ -115,9 +111,13 @@ pub fn getsockopt<T: Copy>(sock: &Socket, opt: libc::c_int, val: libc::c_int) ->
     unsafe {
         let mut slot: T = mem::zeroed();
         let mut len = mem::size_of::<T>() as libc::socklen_t;
-        cvt(libc::getsockopt(*sock.as_inner(), opt, val,
-                          &mut slot as *mut _ as *mut _,
-                          &mut len))?;
+        cvt(libc::getsockopt(
+            *sock.as_inner(),
+            opt,
+            val,
+            &mut slot as *mut _ as *mut _,
+            &mut len,
+        ))?;
         assert_eq!(len as usize, mem::size_of::<T>());
         Ok(slot)
     }
@@ -128,8 +128,10 @@ pub fn set_timeout(sock: &Socket, dur: Option<Duration>, kind: libc::c_int) -> i
     let timeout = match dur {
         Some(dur) => {
             if dur.as_secs() == 0 && dur.subsec_nanos() == 0 {
-                return Err(io::Error::new(io::ErrorKind::InvalidInput,
-                                          "cannot set a 0 duration timeout"));
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "cannot set a 0 duration timeout",
+                ));
             }
 
             let secs = if dur.as_secs() > libc::time_t::max_value() as u64 {
@@ -146,12 +148,10 @@ pub fn set_timeout(sock: &Socket, dur: Option<Duration>, kind: libc::c_int) -> i
             }
             timeout
         }
-        None => {
-            libc::timeval {
-                tv_sec: 0,
-                tv_usec: 0,
-            }
-        }
+        None => libc::timeval {
+            tv_sec: 0,
+            tv_usec: 0,
+        },
     };
     setsockopt(sock, libc::SOL_SOCKET, kind, timeout)
 }

@@ -6,10 +6,12 @@ mod compat;
 mod socket;
 
 #[cfg(unix)]
-#[path = "sys/unix.rs"] mod sys;
+#[path = "sys/unix.rs"]
+mod sys;
 
 #[cfg(windows)]
-#[path = "sys/mod.rs"] mod sys;
+#[path = "sys/mod.rs"]
+mod sys;
 
 pub use socket::IcmpSocket;
 

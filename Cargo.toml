@@ -1,7 +1,7 @@
 [package]
 name = "icmp"
 description = "ICMP socket"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["svartalf <self@svartalf.info>"]
 repository = "https://github.com/svartalf/rust-icmp"
 keywords = ["icmp", "socket"]

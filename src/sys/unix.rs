@@ -1,9 +1,8 @@
-
-use std::net::IpAddr;
-use std::io::{Result, ErrorKind};
+use std::io::{ErrorKind, Result};
 use std::mem;
+use std::net::IpAddr;
 
-use crate::compat::{IntoInner, FromInner, AsInner, cvt, setsockopt, getsockopt};
+use crate::compat::{cvt, getsockopt, setsockopt, AsInner, FromInner, IntoInner};
 
 // Following constants are not defined in libc (as for 0.2.17 version)
 const IPPROTO_ICMP: libc::c_int = 1;
@@ -18,7 +17,6 @@ use libc::SOCK_CLOEXEC;
 #[cfg(not(target_os = "linux"))]
 const SOCK_CLOEXEC: libc::c_int = 0;
 
-
 pub struct Socket {
     fd: libc::c_int,
     family: libc::c_int,
@@ -26,16 +24,13 @@ pub struct Socket {
 }
 
 impl Socket {
-
     pub fn connect(addr: IpAddr) -> Result<Socket> {
         let family = match addr {
             IpAddr::V4(..) => libc::AF_INET,
             IpAddr::V6(..) => libc::AF_INET6,
         };
 
-        let fd = unsafe {
-            cvt(libc::socket(family, libc::SOCK_RAW | SOCK_CLOEXEC, IPPROTO_ICMP))?
-        };
+        let fd = unsafe { cvt(libc::socket(family, libc::SOCK_RAW | SOCK_CLOEXEC, IPPROTO_ICMP))? };
 
         Ok(Socket {
             fd: fd,
@@ -47,10 +42,10 @@ impl Socket {
     pub fn recv(&self, buf: &mut [u8]) -> Result<usize> {
         let ret = unsafe {
             cvt(libc::recv(
-                    self.fd,
-                    buf.as_mut_ptr() as *mut libc::c_void,
-                    buf.len() as libc::size_t,
-                    0,
+                self.fd,
+                buf.as_mut_ptr() as *mut libc::c_void,
+                buf.len() as libc::size_t,
+                0,
             ))
         };
 
@@ -65,14 +60,13 @@ impl Socket {
         let mut peer: libc::sockaddr = unsafe { mem::uninitialized() };
         let ret = unsafe {
             cvt(libc::recvfrom(
-                    self.fd,
-                    buf.as_mut_ptr() as *mut libc::c_void,
-                    buf.len() as libc::size_t,
-                    0,
-                    &mut peer,
-                    &mut (mem::size_of_val(&peer) as libc::socklen_t)
-                )
-            )
+                self.fd,
+                buf.as_mut_ptr() as *mut libc::c_void,
+                buf.len() as libc::size_t,
+                0,
+                &mut peer,
+                &mut (mem::size_of_val(&peer) as libc::socklen_t),
+            ))
         };
 
         match ret {
@@ -85,14 +79,13 @@ impl Socket {
     pub fn send(&mut self, buf: &[u8]) -> Result<usize> {
         let ret = unsafe {
             cvt(libc::sendto(
-                    self.fd,
-                    buf.as_ptr() as *mut libc::c_void,
-                    buf.len() as libc::size_t,
-                    0,
-                    &self.peer,
-                    mem::size_of_val(&self.peer) as libc::socklen_t,
-                )
-            )?
+                self.fd,
+                buf.as_ptr() as *mut libc::c_void,
+                buf.len() as libc::size_t,
+                0,
+                &self.peer,
+                mem::size_of_val(&self.peer) as libc::socklen_t,
+            ))?
         };
 
         Ok(ret as usize)
@@ -138,14 +131,11 @@ impl Socket {
             _ => unreachable!(),
         }
     }
-
 }
 
 impl Drop for Socket {
     fn drop(&mut self) {
-        let _ = unsafe {
-            libc::close(self.fd)
-        };
+        let _ = unsafe { libc::close(self.fd) };
     }
 }
 
