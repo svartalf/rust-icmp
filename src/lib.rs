@@ -1,8 +1,7 @@
-#[deny(missing_docs)]
+//! Raw ICMP socket
 
-extern crate libc;
+#![deny(missing_docs)]
 
-#[doc(hidden)]
 mod compat;
 mod socket;
 

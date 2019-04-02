@@ -1,7 +1,7 @@
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::time::Duration;
 
-use IcmpSocket;
+use crate::IcmpSocket;
 
 macro_rules! t {
     ($e:expr) => {
